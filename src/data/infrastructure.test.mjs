@@ -193,6 +193,7 @@ test('consumer build includes only infrastructure code and resolves assets under
   assert.deepEqual(sources.map((id) => id.split('/').at(-1)).sort(), [
     'infrastructure.js',
     'infrastructureOverlayEntry.js',
+    'inputOwnership.js',
     'localGeojsonCore.js',
     'localGeojsonLod.js',
   ]);
