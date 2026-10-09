@@ -75,15 +75,23 @@ export function hasRequiredDependencies(rootDir = ROOT) {
   }
 }
 
-/** Return an npm version-check command without invoking a shell implicitly. */
-export function npmProcessSpec(platform = process.platform, comSpec = process.env.ComSpec) {
+/** Return an npm command without using spawn's implicit shell mode. */
+export function npmProcessSpec(
+  platform = process.platform,
+  npmArgs = ['--version'],
+  comSpec = process.env.ComSpec,
+) {
+  const supportedArgs = new Set(['--version', 'ci']);
+  if (!Array.isArray(npmArgs) || npmArgs.some((arg) => !supportedArgs.has(arg))) {
+    throw new TypeError('npm arguments must be simple command-line tokens');
+  }
   if (platform === 'win32') {
     return {
       command: comSpec || 'cmd.exe',
-      args: ['/d', '/s', '/c', 'npm.cmd --version'],
+      args: ['/d', '/s', '/c', ['npm.cmd', ...npmArgs].join(' ')],
     };
   }
-  return { command: 'npm', args: ['--version'] };
+  return { command: 'npm', args: npmArgs };
 }
 
 /** Read one key from Vite's dotenv file ladder without depending on Vite. */
