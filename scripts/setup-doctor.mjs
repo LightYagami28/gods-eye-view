@@ -75,10 +75,15 @@ export function hasRequiredDependencies(rootDir = ROOT) {
   }
 }
 
-/** Return the npm command and spawn mode required by the target platform. */
-export function npmProcessSpec(platform = process.platform) {
-  const windows = platform === 'win32';
-  return { command: windows ? 'npm.cmd' : 'npm', shell: windows };
+/** Return an npm version-check command without invoking a shell implicitly. */
+export function npmProcessSpec(platform = process.platform, comSpec = process.env.ComSpec) {
+  if (platform === 'win32') {
+    return {
+      command: comSpec || 'cmd.exe',
+      args: ['/d', '/s', '/c', 'npm.cmd --version'],
+    };
+  }
+  return { command: 'npm', args: ['--version'] };
 }
 
 /** Read one key from Vite's dotenv file ladder without depending on Vite. */
@@ -188,9 +193,9 @@ export function buildCapabilitySummary(
 export function inspectSetup({ includeKeychain = true, authoritativeEnvironment = false, rootDir = ROOT } = {}) {
   const node = classifyNodeVersion();
   const npm = npmProcessSpec();
-  const npmResult = spawnSync(npm.command, ['--version'], {
+  const npmResult = spawnSync(npm.command, npm.args, {
     encoding: 'utf8',
-    shell: npm.shell,
+    windowsHide: true,
   });
   const credentials = Object.fromEntries(CREDENTIALS.map((spec) => [
     spec.name,

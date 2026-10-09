@@ -59,9 +59,16 @@ test('placeholder values are never counted as configured credentials', () => {
 });
 
 test('doctor selects a Windows-safe npm process without changing Unix behavior', () => {
-  assert.deepEqual(npmProcessSpec('win32'), { command: 'npm.cmd', shell: true });
-  assert.deepEqual(npmProcessSpec('darwin'), { command: 'npm', shell: false });
-  assert.deepEqual(npmProcessSpec('linux'), { command: 'npm', shell: false });
+  assert.deepEqual(npmProcessSpec('win32', ''), {
+    command: 'cmd.exe',
+    args: ['/d', '/s', '/c', 'npm.cmd --version'],
+  });
+  assert.deepEqual(npmProcessSpec('win32', 'C:\\Windows\\System32\\cmd.exe'), {
+    command: 'C:\\Windows\\System32\\cmd.exe',
+    args: ['/d', '/s', '/c', 'npm.cmd --version'],
+  });
+  assert.deepEqual(npmProcessSpec('darwin'), { command: 'npm', args: ['--version'] });
+  assert.deepEqual(npmProcessSpec('linux'), { command: 'npm', args: ['--version'] });
 });
 
 test('doctor recognizes every OpenSky OAuth keychain alias used by dev-fresh', () => {
